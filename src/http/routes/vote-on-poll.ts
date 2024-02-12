@@ -1,7 +1,8 @@
 import { z } from "zod"
-import { prisma } from "../../lib/prisma"
 import { FastifyInstance } from "fastify"
 import { randomUUID } from "crypto"
+import { prisma } from "../../lib/prisma"
+import { redis } from "../../lib/redis"
 
 export async function voteOnPoll(app: FastifyInstance) {
     app.post("/polls/vote/:pollId", async (request, reply) => {
@@ -33,6 +34,7 @@ export async function voteOnPoll(app: FastifyInstance) {
                         id: previousVote.id,
                     }
                 })
+                await redis.zincrby(pollId, -1, previousVote.pollOptionId)
             }
             else if(previousVote) {
                 return reply.status(400).send({ message: "You already voted on this poll" })
@@ -56,6 +58,8 @@ export async function voteOnPoll(app: FastifyInstance) {
                 pollOptionId,
             }
         })
+
+        await redis.zincrby(pollId, 1, pollOptionId)
 
         return reply.status(201).send()
     })
