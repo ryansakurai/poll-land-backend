@@ -5,6 +5,11 @@ import { prisma } from "../lib/prisma"
 import { redis } from "../lib/redis"
 import { votesPubSub } from "../utils/votes-pub-sub"
 
+/*
+ *  the cookies strategy isn't perfect for enforcing unique voting,
+ *  because a tech savier user would know to just clean their cookies
+ */
+
 export async function voteOnPoll(app: FastifyInstance) {
     app.post("/polls/vote/:pollId", async (request, reply) => {
         const params = z.object({
