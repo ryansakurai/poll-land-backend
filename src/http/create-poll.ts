@@ -9,7 +9,15 @@ export async function createPoll(app: FastifyInstance) {
             options: z.array(z.string()),
         });
 
-        const { title, options } = pollBodyType.parse(request.body);
+        const result = pollBodyType.safeParse(request.body);
+        if(!result.success) {
+            return reply.status(422).send({
+                code: "invalidBody",
+                details: "Request body is in incorrect format.",
+            });
+        }
+
+        const { title, options } = result.data;
 
         const poll = await prisma.poll.create({
             data: {
