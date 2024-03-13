@@ -32,6 +32,6 @@ export async function createPoll(app: FastifyInstance) {
             },
         });
 
-        return reply.status(201).send(poll);
+        return reply.status(201).header("Location", encodeURI(`http://localhost:3333/polls/${poll.id}`)).send();
     });
 }
