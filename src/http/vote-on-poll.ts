@@ -52,7 +52,10 @@ const voteOnPoll = async (app: FastifyInstance) => {
             if(previousVote && previousVote.pollOptionId !== pollOptionId) {
                 deleteVote(previousVote)
             } else if(previousVote) {
-                return reply.status(400).send({ message: "You already voted on this poll" });
+                return reply.status(400).send({
+                    code: "duplicateVote",
+                    details: "You already voted on this poll.",
+                });
             }
         } else {
             sessionId = randomUUID();
