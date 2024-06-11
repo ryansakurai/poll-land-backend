@@ -18,7 +18,9 @@ const bodyType = z.object({
     pollOptionId: z.string().uuid(),
 });
 
-// TODO: std errors
+/**
+ * @todo std errors
+ */
 const voteOnPoll = async (app: FastifyInstance) => {
     app.post("/polls/vote/:pollId", async (request, reply) => {
         const paramParseReturn = paramType.safeParse(request.params);

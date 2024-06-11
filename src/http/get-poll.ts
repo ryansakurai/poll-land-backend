@@ -3,15 +3,24 @@ import { FastifyInstance } from "fastify";
 import { prisma } from "../lib/prisma";
 import { redis } from "../lib/redis";
 
-// TODO: safe parse
-// TODO: std errors
+
+const paramType = z.object({
+    pollId: z.string().uuid(),
+});
+
+/**
+ * @todo std errors
+ */
 const getPoll = async (app: FastifyInstance) => {
     app.get("/polls/:pollId", async (request, reply) => {
-        const paramType = z.object({
-            pollId: z.string().uuid(),
-        });
-
-        const { pollId } = paramType.parse(request.params);
+        const paramParseReturn = paramType.safeParse(request.params);
+        if(!paramParseReturn.success) {
+            return reply.status(422).send({
+                code: "invalidParams",
+                details: "Request parameters are in incorrect format.",
+            });
+        }
+        const { pollId } = paramParseReturn.data;
 
         const poll = await prisma.poll.findUnique({
             where: {
@@ -26,14 +35,16 @@ const getPoll = async (app: FastifyInstance) => {
                 },
             },
         });
-
         if(!poll) {
-            return reply.status(400).send({ message: "Poll not found." });
+            return reply.status(404).send({
+                code: "resourceNotFound",
+                details: "The poll was not found.",
+            });
         }
 
         const rawVoteList = await redis.zrange(pollId, 0, -1, "WITHSCORES");
         const voteList = rawVoteList.reduce((outputObj, element, idx) => {
-            if (idx % 2 == 0) {
+            if(idx % 2 == 0) { // even is key and odd is value
                 const score = rawVoteList[idx + 1];
                 Object.assign(outputObj, { [element]: Number(score) });
             }

@@ -7,7 +7,9 @@ const bodyType = z.object({
     options: z.array(z.string()),
 });
 
-// TODO: std errors
+/**
+ * @todo std errors
+ */
 const createPoll = async (app: FastifyInstance) => {
     app.post("/polls", async (request, reply) => {
         const bodyParseReturn = bodyType.safeParse(request.body);
