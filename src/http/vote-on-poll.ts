@@ -10,51 +10,49 @@ import { votesPubSub } from "../utils/votes-pub-sub";
  *  because a tech savier user would know to just clean their cookies
  */
 
-// TODO: safe parse
+
+const paramType = z.object({
+    pollId: z.string().uuid(),
+});
+const bodyType = z.object({
+    pollOptionId: z.string().uuid(),
+});
+
 // TODO: std errors
 const voteOnPoll = async (app: FastifyInstance) => {
     app.post("/polls/vote/:pollId", async (request, reply) => {
-        const paramType = z.object({
-            pollId: z.string().uuid(),
-        });
+        const paramParseReturn = paramType.safeParse(request.params);
+        if(!paramParseReturn.success) {
+            return reply.status(422).send({
+                code: "invalidParams",
+                details: "Request parameters are in incorrect format.",
+            });
+        }
+        const { pollId } = paramParseReturn.data;
 
-        const bodyType = z.object({
-            pollOptionId: z.string().uuid(),
-        });
-
-        const { pollId } = paramType.parse(request.params);
-        const { pollOptionId } = bodyType.parse(request.body);
+        const bodyParseReturn = bodyType.safeParse(request.body);
+        if(!bodyParseReturn.success) {
+            return reply.status(422).send({
+                code: "invalidBody",
+                details: "Request body is in incorrect format.",
+            });
+        }
+        const { pollOptionId } = bodyParseReturn.data;
 
         let { sessionId } = request.cookies;
         if(sessionId) {
             const previousVote = await prisma.vote.findUnique({
                 where: {
-                    sessionId_pollId: {
-                        sessionId,
-                        pollId,
-                    },
+                    sessionId_pollId: { sessionId, pollId },
                 },
             });
 
             if(previousVote && previousVote.pollOptionId !== pollOptionId) {
-                await prisma.vote.delete({
-                    where: {
-                        id: previousVote.id,
-                    },
-                });
-                const qtVotes = await redis.zincrby(pollId, -1, previousVote.pollOptionId);
-
-                votesPubSub.publish(pollId, {
-                    pollOptionId: previousVote.pollOptionId,
-                    qtVotes: Number(qtVotes),
-                });
-            }
-            else if(previousVote) {
+                deleteVote(previousVote)
+            } else if(previousVote) {
                 return reply.status(400).send({ message: "You already voted on this poll" });
             }
-        }
-
-        if(!sessionId) {
+        } else {
             sessionId = randomUUID();
             reply.setCookie("sessionId", sessionId, {
                 path: "/",
@@ -73,7 +71,6 @@ const voteOnPoll = async (app: FastifyInstance) => {
         });
 
         const qtVotes = await redis.zincrby(pollId, 1, pollOptionId);
-
         votesPubSub.publish(pollId, {
             pollOptionId: pollOptionId,
             qtVotes: Number(qtVotes),
@@ -82,5 +79,23 @@ const voteOnPoll = async (app: FastifyInstance) => {
         return reply.status(201).send();
     });
 };
+
+const deleteVote = async (vote: { id: number,
+                                  sessionId: string,
+                                  createdAt: Date,
+                                  pollOptionId: string,
+                                  pollId: string }) => {
+    await prisma.vote.delete({
+        where: {
+            id: vote.id,
+        },
+    });
+    const qtVotes = await redis.zincrby(vote.pollId, -1, vote.pollOptionId);
+
+    votesPubSub.publish(vote.pollId, {
+        pollOptionId: vote.pollOptionId,
+        qtVotes: Number(qtVotes),
+    });
+}
 
 export { voteOnPoll };
