@@ -5,7 +5,7 @@ import { redis } from "../lib/redis";
 
 // TODO: safe parse
 // TODO: std errors
-export async function getPoll(app: FastifyInstance) {
+const getPoll = async (app: FastifyInstance) => {
     app.get("/polls/:pollId", async (request, reply) => {
         const paramType = z.object({
             pollId: z.string().uuid(),
@@ -27,8 +27,9 @@ export async function getPoll(app: FastifyInstance) {
             },
         });
 
-        if(!poll)
+        if(!poll) {
             return reply.status(400).send({ message: "Poll not found." });
+        }
 
         const rawVoteList = await redis.zrange(pollId, 0, -1, "WITHSCORES");
         const voteList = rawVoteList.reduce((outputObj, element, idx) => {
@@ -53,4 +54,6 @@ export async function getPoll(app: FastifyInstance) {
             },
         });
     });
-}
+};
+
+export { getPoll };

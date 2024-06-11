@@ -12,7 +12,7 @@ import { votesPubSub } from "../utils/votes-pub-sub";
 
 // TODO: safe parse
 // TODO: std errors
-export async function voteOnPoll(app: FastifyInstance) {
+const voteOnPoll = async (app: FastifyInstance) => {
     app.post("/polls/vote/:pollId", async (request, reply) => {
         const paramType = z.object({
             pollId: z.string().uuid(),
@@ -26,21 +26,21 @@ export async function voteOnPoll(app: FastifyInstance) {
         const { pollOptionId } = bodyType.parse(request.body);
 
         let { sessionId } = request.cookies;
-        if (sessionId) {
+        if(sessionId) {
             const previousVote = await prisma.vote.findUnique({
                 where: {
                     sessionId_pollId: {
                         sessionId,
                         pollId,
-                    }
-                }
+                    },
+                },
             });
 
-            if (previousVote && previousVote.pollOptionId !== pollOptionId) {
+            if(previousVote && previousVote.pollOptionId !== pollOptionId) {
                 await prisma.vote.delete({
                     where: {
                         id: previousVote.id,
-                    }
+                    },
                 });
                 const qtVotes = await redis.zincrby(pollId, -1, previousVote.pollOptionId);
 
@@ -49,16 +49,16 @@ export async function voteOnPoll(app: FastifyInstance) {
                     qtVotes: Number(qtVotes),
                 });
             }
-            else if (previousVote) {
+            else if(previousVote) {
                 return reply.status(400).send({ message: "You already voted on this poll" });
             }
         }
 
-        if (!sessionId) {
+        if(!sessionId) {
             sessionId = randomUUID();
             reply.setCookie("sessionId", sessionId, {
                 path: "/",
-                maxAge: 60 * 60 * 24 * 30, // 30 days
+                maxAge: 30*24*60*60, // 30 days
                 signed: true,
                 httpOnly: true,
             });
@@ -69,7 +69,7 @@ export async function voteOnPoll(app: FastifyInstance) {
                 sessionId,
                 pollId,
                 pollOptionId,
-            }
+            },
         });
 
         const qtVotes = await redis.zincrby(pollId, 1, pollOptionId);
@@ -81,4 +81,6 @@ export async function voteOnPoll(app: FastifyInstance) {
 
         return reply.status(201).send();
     });
-}
+};
+
+export { voteOnPoll };

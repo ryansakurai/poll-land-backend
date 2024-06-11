@@ -3,7 +3,7 @@ import { FastifyInstance } from "fastify";
 import { prisma } from "../lib/prisma";
 
 // TODO: std errors
-export async function createPoll(app: FastifyInstance) {
+const createPoll = async (app: FastifyInstance) => {
     app.post("/polls", async (request, reply) => {
         const bodyType = z.object({
             title: z.string(),
@@ -25,9 +25,7 @@ export async function createPoll(app: FastifyInstance) {
                 title,
                 options: {
                     createMany: {
-                        data: options.map(optionTitle => {
-                            return { title: optionTitle };
-                        }),
+                        data: options.map((optionTitle) => ({ title: optionTitle })),
                     },
                 },
             },
@@ -35,4 +33,6 @@ export async function createPoll(app: FastifyInstance) {
 
         return reply.status(201).header("Location", encodeURI(`http://localhost:3333/polls/${poll.id}`)).send();
     });
-}
+};
+
+export { createPoll };
