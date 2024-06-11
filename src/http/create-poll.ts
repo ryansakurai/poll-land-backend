@@ -2,14 +2,15 @@ import { z } from "zod";
 import { FastifyInstance } from "fastify";
 import { prisma } from "../lib/prisma";
 
+// TODO: std errors
 export async function createPoll(app: FastifyInstance) {
     app.post("/polls", async (request, reply) => {
-        const pollBodyType = z.object({
+        const bodyType = z.object({
             title: z.string(),
             options: z.array(z.string()),
         });
 
-        const result = pollBodyType.safeParse(request.body);
+        const result = bodyType.safeParse(request.body);
         if(!result.success) {
             return reply.status(422).send({
                 code: "invalidBody",

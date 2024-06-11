@@ -3,13 +3,15 @@ import { FastifyInstance } from "fastify";
 import { prisma } from "../lib/prisma";
 import { redis } from "../lib/redis";
 
+// TODO: safe parse
+// TODO: std errors
 export async function getPoll(app: FastifyInstance) {
     app.get("/polls/:pollId", async (request, reply) => {
-        const pollParamType = z.object({
+        const paramType = z.object({
             pollId: z.string().uuid(),
         });
 
-        const { pollId } = pollParamType.parse(request.params);
+        const { pollId } = paramType.parse(request.params);
 
         const poll = await prisma.poll.findUnique({
             where: {
