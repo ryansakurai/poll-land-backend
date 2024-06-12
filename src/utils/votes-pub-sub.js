@@ -1,10 +1,7 @@
-type Message = { pollOptionId: string, qtVotes: number };
-type PublishFunction = (message: Message) => void;
-
 class VotesPubSub {
-    private channels: Record<string, PublishFunction[]> = {};
+    channels = {};
 
-    subscribe(pollId: string, publishFunc: PublishFunction) {
+    subscribe(pollId, publishFunc) {
         if(!this.channels[pollId]) {
             this.channels[pollId] = [];
         }
@@ -12,7 +9,7 @@ class VotesPubSub {
         this.channels[pollId].push(publishFunc);
     }
 
-    publish(pollId: string, message: Message) {
+    publish(pollId, message) {
         if(!this.channels[pollId]) {
             return;
         }

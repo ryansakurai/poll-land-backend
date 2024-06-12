@@ -1,7 +1,6 @@
 import { z } from "zod";
-import { FastifyInstance } from "fastify";
-import { prisma } from "../lib/prisma";
-import { redis } from "../lib/redis";
+import { prisma } from "../lib/prisma.js";
+import { redis } from "../lib/redis.js";
 
 
 const paramType = z.object({
@@ -11,7 +10,7 @@ const paramType = z.object({
 /**
  * @todo std errors
  */
-const getPoll = async (app: FastifyInstance) => {
+const getPoll = async (app) => {
     app.get("/polls/:pollId", async (request, reply) => {
         const paramParseReturn = paramType.safeParse(request.params);
         if(!paramParseReturn.success) {
@@ -49,7 +48,7 @@ const getPoll = async (app: FastifyInstance) => {
                 Object.assign(outputObj, { [element]: Number(score) });
             }
             return outputObj;
-        }, {} as Record<string, number>);
+        }, {});
 
         return reply.status(200).send({
             poll: {

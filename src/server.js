@@ -1,10 +1,10 @@
 import fastify from "fastify";
 import cookie from "@fastify/cookie";
 import { fastifyWebsocket } from "@fastify/websocket";
-import { createPoll } from "./http/create-poll";
-import { getPoll } from "./http/get-poll";
-import { voteOnPoll } from "./http/vote-on-poll";
-import { getLivePollResults } from "./web-socket/get-live-poll-results";
+import { createPoll } from "./http/create-poll.js";
+import { getPoll } from "./http/get-poll.js";
+import { voteOnPoll } from "./http/vote-on-poll.js";
+import { getLivePollResults } from "./web-socket/get-live-poll-results.js";
 
 const app = fastify();
 app.register(cookie, {

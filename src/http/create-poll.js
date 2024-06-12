@@ -1,6 +1,5 @@
 import { z } from "zod";
-import { FastifyInstance } from "fastify";
-import { prisma } from "../lib/prisma";
+import { prisma } from "../lib/prisma.js";
 
 const bodyType = z.object({
     title: z.string(),
@@ -10,7 +9,7 @@ const bodyType = z.object({
 /**
  * @todo std errors
  */
-const createPoll = async (app: FastifyInstance) => {
+const createPoll = async (app) => {
     app.post("/polls", async (request, reply) => {
         const bodyParseReturn = bodyType.safeParse(request.body);
         if(!bodyParseReturn.success) {

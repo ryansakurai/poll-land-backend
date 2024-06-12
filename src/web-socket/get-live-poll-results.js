@@ -1,13 +1,12 @@
-import { FastifyInstance } from "fastify";
 import z from "zod";
-import { votesPubSub } from "../utils/votes-pub-sub";
+import { votesPubSub } from "../utils/votes-pub-sub.js";
 
 
 const paramType = z.object({
     pollId: z.string().uuid(),
 });
 
-const getLivePollResults = async (app: FastifyInstance) => {
+const getLivePollResults = async (app) => {
     app.get("/polls/:pollId/liveResults", { websocket: true }, (connection, request) => {
         const paramParseReturn = paramType.safeParse(request.params);
         if(!paramParseReturn.success) {

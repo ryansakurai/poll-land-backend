@@ -1,9 +1,8 @@
 import { z } from "zod";
-import { FastifyInstance } from "fastify";
 import { randomUUID } from "crypto";
-import { prisma } from "../lib/prisma";
-import { redis } from "../lib/redis";
-import { votesPubSub } from "../utils/votes-pub-sub";
+import { prisma } from "../lib/prisma.js";
+import { redis } from "../lib/redis.js";
+import { votesPubSub } from "../utils/votes-pub-sub.js";
 
 /*
  *  the cookies strategy isn't perfect for enforcing unique voting,
@@ -21,7 +20,7 @@ const bodyType = z.object({
 /**
  * @todo std errors
  */
-const voteOnPoll = async (app: FastifyInstance) => {
+const voteOnPoll = async (app) => {
     app.post("/polls/vote/:pollId", async (request, reply) => {
         const paramParseReturn = paramType.safeParse(request.params);
         if(!paramParseReturn.success) {
@@ -85,11 +84,7 @@ const voteOnPoll = async (app: FastifyInstance) => {
     });
 };
 
-const deleteVote = async (vote: { id: number,
-                                  sessionId: string,
-                                  createdAt: Date,
-                                  pollOptionId: string,
-                                  pollId: string }) => {
+const deleteVote = async (vote) => {
     await prisma.vote.delete({
         where: {
             id: vote.id,
