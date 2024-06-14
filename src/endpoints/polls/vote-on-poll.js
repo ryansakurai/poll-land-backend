@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { randomUUID } from "crypto";
-import { prisma } from "../lib/prisma.js";
-import { redis } from "../lib/redis.js";
-import { votesPubSub } from "../utils/votes-pub-sub.js";
+import { prisma } from "../../lib/prisma.js";
+import { redis } from "../../lib/redis.js";
+import { votesPubSub } from "../../utils/votes-pub-sub.js";
 
 /*
  *  the cookies strategy isn't perfect for enforcing unique voting,

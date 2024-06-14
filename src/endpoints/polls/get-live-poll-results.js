@@ -1,5 +1,5 @@
 import z from "zod";
-import { votesPubSub } from "../utils/votes-pub-sub.js";
+import { votesPubSub } from "../../utils/votes-pub-sub.js";
 
 
 const paramType = z.object({

@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { prisma } from "../lib/prisma.js";
-import { redis } from "../lib/redis.js";
+import { prisma } from "../../lib/prisma.js";
+import { redis } from "../../lib/redis.js";
 
 
 const paramType = z.object({
