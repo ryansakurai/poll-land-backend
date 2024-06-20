@@ -1,7 +1,10 @@
+import 'dotenv/config'
 import Fastify from "fastify";
 import cookie from "@fastify/cookie";
 import { fastifyWebsocket } from "@fastify/websocket";
+import fastifyJwt from "@fastify/jwt";
 import postUsersEndPoint from "./endpoints/users/create-user.js";
+import loginEndPoint from "./endpoints/users/login/login.js"
 import { createPoll } from "./endpoints/polls/create-poll.js";
 import { getPoll } from "./endpoints/polls/get-poll.js";
 import { voteOnPoll } from "./endpoints/polls/vote-on-poll.js";
@@ -13,8 +16,12 @@ app.register(cookie, {
     hook: "onRequest",
 });
 app.register(fastifyWebsocket);
+app.register(fastifyJwt, {
+    secret: process.env.JWT_SECRET,
+});
 
 app.register(postUsersEndPoint);
+app.register(loginEndPoint);
 app.register(getPoll);
 app.register(getLivePollResults);
 app.register(createPoll);
