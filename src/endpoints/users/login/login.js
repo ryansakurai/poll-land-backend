@@ -31,7 +31,7 @@ const login = async (app) => {
             });
         }
 
-        const passwordMatch = await bcrypt.compare(password, user.password);
+        const passwordMatch = await bcrypt.compare(password, user.passwordHash);
         if(!passwordMatch) {
             return reply.status(403).send({
                 code: "incorrectPassword",

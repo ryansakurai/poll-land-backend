@@ -20,17 +20,17 @@ const createUser = async (app) => {
         }
         const { username, email, password } = bodyParseReturn.data;
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const passwordHash = await bcrypt.hash(password, 10);
 
         const user = await prisma.user.create({
             data: {
                 username,
                 email,
-                password: hashedPassword,
+                passwordHash,
             },
         });
 
-        return reply.status(200).header("Location", encodeURI(`http://localhost:3333/users/${user.id}`)).send();
+        return reply.status(200).send();
     });
 };
 
